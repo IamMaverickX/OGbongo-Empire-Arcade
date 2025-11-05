@@ -1,1 +1,36 @@
+/* Custom animations for slot machine */
+@keyframes spin {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-20px); }
+}
 
+.reel.spinning {
+    animation: spin 0.1s infinite;
+}
+
+.win-glow {
+    animation: glow 1s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+    from { box-shadow: 0 0 5px #10B981; }
+    to { box-shadow: 0 0 20px #10B981, 0 0 30px #10B981; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1F2937;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #10B981;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+}
