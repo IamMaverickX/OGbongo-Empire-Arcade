@@ -21,5 +21,5 @@ A Web3 casino platform built on Solana with Phantom wallet integration.
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/your-username/bongo-empire-arcade.git
+git clone https://github.com/IamMaverickX/bongo-empire-arcade.git
 cd bongo-empire-arcade
