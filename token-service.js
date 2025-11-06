@@ -8,7 +8,6 @@ class TokenService {
         this.casinoWallet = casinoWallet;
     }
 
-    // Get or create associated token account
     async getOrCreateAssociatedTokenAccount(owner, payer) {
         const associatedToken = getAssociatedTokenAddressSync(this.tokenMint, owner);
 
@@ -32,7 +31,6 @@ class TokenService {
         }
     }
 
-    // REAL TRANSFER: Transfer tokens between accounts
     async transferTokens(fromOwner, toOwner, amount, payer) {
         try {
             console.log(`💸 REAL TRANSFER: ${amount} OGB from ${fromOwner.toString()} to ${toOwner.toString()}`);
@@ -40,7 +38,6 @@ class TokenService {
             const fromTokenAccount = await this.getOrCreateAssociatedTokenAccount(fromOwner, payer);
             const toTokenAccount = await this.getOrCreateAssociatedTokenAccount(toOwner, payer);
 
-            // Convert amount to lamports (6 decimals for Pump.fun tokens)
             const amountInLamports = Math.round(amount * Math.pow(10, 6));
 
             const transaction = new Transaction().add(
@@ -62,7 +59,6 @@ class TokenService {
         }
     }
 
-    // REAL BET: Player transfers tokens to casino
     async placeBet(playerPublicKey, amount) {
         const playerKey = new PublicKey(playerPublicKey);
         const casinoKey = this.casinoWallet.getKeypair();
@@ -74,7 +70,7 @@ class TokenService {
                 playerKey,
                 casinoKey.publicKey,
                 amount,
-                casinoKey // Casino pays transaction fee
+                casinoKey
             );
 
             return {
@@ -94,7 +90,6 @@ class TokenService {
         }
     }
 
-    // REAL WIN: Casino pays winnings to player
     async payWinnings(playerPublicKey, amount) {
         const playerKey = new PublicKey(playerPublicKey);
         const casinoKey = this.casinoWallet.getKeypair();
@@ -126,7 +121,6 @@ class TokenService {
         }
     }
 
-    // Get REAL token balance from blockchain
     async getBalance(publicKey) {
         try {
             const tokenAccount = await getAssociatedTokenAddress(this.tokenMint, new PublicKey(publicKey));
@@ -140,12 +134,10 @@ class TokenService {
         }
     }
 
-    // Get REAL casino balance
     async getCasinoBalance() {
         return await this.getBalance(this.casinoWallet.getPublicKey());
     }
 
-    // Check if casino has enough SOL for transaction fees
     async checkCasinoSOLBalance() {
         try {
             const balance = await this.connection.getBalance(this.casinoWallet.getKeypair().publicKey);
