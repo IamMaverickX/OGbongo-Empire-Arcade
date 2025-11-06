@@ -1,5 +1,5 @@
-import { Connection, PublicKey, Transaction } from '@solana/web3.js';
-import { createTransferInstruction, getAssociatedTokenAddress, getAccount, createAssociatedTokenAccountInstruction } from '@solana/spl-token';
+import { Connection, PublicKey, Transaction, sendAndConfirmTransaction } from '@solana/web3.js';
+import { createTransferInstruction, getAssociatedTokenAddress, getAccount, createAssociatedTokenAccountInstruction, getAssociatedTokenAddressSync } from '@solana/spl-token';
 
 class TokenService {
     constructor(connection, tokenMint, casinoWallet) {
@@ -8,14 +8,15 @@ class TokenService {
         this.casinoWallet = casinoWallet;
     }
 
+    // Get or create associated token account
     async getOrCreateAssociatedTokenAccount(owner, payer) {
-        const associatedToken = await getAssociatedTokenAddress(this.tokenMint, owner);
+        const associatedToken = getAssociatedTokenAddressSync(this.tokenMint, owner);
 
         try {
             await getAccount(this.connection, associatedToken);
             return associatedToken;
         } catch (error) {
-            console.log('Creating associated token account for:', owner.toString());
+            console.log('🆕 Creating associated token account for:', owner.toString());
             const transaction = new Transaction().add(
                 createAssociatedTokenAccountInstruction(
                     payer.publicKey,
@@ -25,86 +26,136 @@ class TokenService {
                 )
             );
 
-            // For now, we'll just return the address without creating
-            // In production, you'd need SOL for transaction fees
+            const signature = await sendAndConfirmTransaction(this.connection, transaction, [payer]);
+            console.log('✅ Token account created:', signature);
             return associatedToken;
         }
     }
 
-    async transferTokens(fromOwner, toOwner, amount) {
+    // REAL TRANSFER: Transfer tokens between accounts
+    async transferTokens(fromOwner, toOwner, amount, payer) {
         try {
-            console.log(`💸 Simulating transfer: ${amount} OGB from ${fromOwner.toString()} to ${toOwner.toString()}`);
+            console.log(`💸 REAL TRANSFER: ${amount} OGB from ${fromOwner.toString()} to ${toOwner.toString()}`);
             
-            // In a real implementation, this would create and send an actual transaction
-            // For now, we'll simulate it and return a fake signature
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const fromTokenAccount = await this.getOrCreateAssociatedTokenAccount(fromOwner, payer);
+            const toTokenAccount = await this.getOrCreateAssociatedTokenAccount(toOwner, payer);
+
+            // Convert amount to lamports (6 decimals for Pump.fun tokens)
+            const amountInLamports = Math.round(amount * Math.pow(10, 6));
+
+            const transaction = new Transaction().add(
+                createTransferInstruction(
+                    fromTokenAccount,
+                    toTokenAccount,
+                    fromOwner,
+                    amountInLamports
+                )
+            );
+
+            const signature = await sendAndConfirmTransaction(this.connection, transaction, [payer]);
+            console.log('✅ REAL Transfer successful:', signature);
             
-            const fakeSignature = 'sim_' + Date.now() + Math.random().toString(36).substr(2, 9);
-            
-            console.log('✅ Transfer simulated successfully');
-            return fakeSignature;
+            return signature;
         } catch (error) {
-            console.error('❌ Transfer failed:', error);
-            throw error;
+            console.error('❌ REAL Transfer failed:', error);
+            throw new Error(`Transfer failed: ${error.message}`);
         }
     }
 
+    // REAL BET: Player transfers tokens to casino
     async placeBet(playerPublicKey, amount) {
         const playerKey = new PublicKey(playerPublicKey);
         const casinoKey = this.casinoWallet.getKeypair();
 
-        console.log(`🎯 Player ${playerPublicKey} placing bet: ${amount} OGB`);
+        console.log(`🎯 REAL BET: Player ${playerPublicKey} betting ${amount} OGB`);
 
-        const signature = await this.transferTokens(
-            playerKey,
-            casinoKey.publicKey,
-            amount
-        );
+        try {
+            const signature = await this.transferTokens(
+                playerKey,
+                casinoKey.publicKey,
+                amount,
+                casinoKey // Casino pays transaction fee
+            );
 
-        return {
-            success: true,
-            signature: signature,
-            amount: amount,
-            from: playerPublicKey,
-            to: casinoKey.publicKey.toString(),
-            note: 'SIMULATION MODE - No real tokens moved'
-        };
+            return {
+                success: true,
+                signature: signature,
+                amount: amount,
+                from: playerPublicKey,
+                to: casinoKey.publicKey.toString(),
+                explorerUrl: `https://solscan.io/tx/${signature}?cluster=mainnet-beta`
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                amount: amount
+            };
+        }
     }
 
+    // REAL WIN: Casino pays winnings to player
     async payWinnings(playerPublicKey, amount) {
         const playerKey = new PublicKey(playerPublicKey);
         const casinoKey = this.casinoWallet.getKeypair();
 
-        console.log(`💰 Paying winnings to ${playerPublicKey}: ${amount} OGB`);
+        console.log(`💰 REAL WIN: Paying ${amount} OGB to ${playerPublicKey}`);
 
-        const signature = await this.transferTokens(
-            casinoKey.publicKey,
-            playerKey,
-            amount
-        );
+        try {
+            const signature = await this.transferTokens(
+                casinoKey.publicKey,
+                playerKey,
+                amount,
+                casinoKey
+            );
 
-        return {
-            success: true,
-            signature: signature,
-            amount: amount,
-            from: casinoKey.publicKey.toString(),
-            to: playerPublicKey,
-            note: 'SIMULATION MODE - No real tokens moved'
-        };
+            return {
+                success: true,
+                signature: signature,
+                amount: amount,
+                from: casinoKey.publicKey.toString(),
+                to: playerPublicKey,
+                explorerUrl: `https://solscan.io/tx/${signature}?cluster=mainnet-beta`
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message,
+                amount: amount
+            };
+        }
     }
 
+    // Get REAL token balance from blockchain
     async getBalance(publicKey) {
         try {
             const tokenAccount = await getAssociatedTokenAddress(this.tokenMint, new PublicKey(publicKey));
             const accountInfo = await getAccount(this.connection, tokenAccount);
-            return Number(accountInfo.amount) / Math.pow(10, 6);
+            const balance = Number(accountInfo.amount) / Math.pow(10, 6);
+            console.log(`💰 REAL Balance for ${publicKey}: ${balance} OGB`);
+            return balance;
         } catch (error) {
+            console.log(`💰 REAL Balance for ${publicKey}: 0 OGB (no token account)`);
             return 0;
         }
     }
 
+    // Get REAL casino balance
     async getCasinoBalance() {
         return await this.getBalance(this.casinoWallet.getPublicKey());
+    }
+
+    // Check if casino has enough SOL for transaction fees
+    async checkCasinoSOLBalance() {
+        try {
+            const balance = await this.connection.getBalance(this.casinoWallet.getKeypair().publicKey);
+            const solBalance = balance / 1e9;
+            console.log(`⛽ Casino SOL balance: ${solBalance} SOL`);
+            return solBalance;
+        } catch (error) {
+            console.error('❌ Error checking SOL balance:', error);
+            return 0;
+        }
     }
 }
 
