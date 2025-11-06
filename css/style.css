@@ -13,8 +13,30 @@
 }
 
 @keyframes glow {
-    from { box-shadow: 0 0 5px #10B981; }
-    to { box-shadow: 0 0 20px #10B981, 0 0 30px #10B981; }
+    from { 
+        box-shadow: 0 0 5px #10B981; 
+        transform: scale(1);
+    }
+    to { 
+        box-shadow: 0 0 20px #10B981, 0 0 30px #10B981; 
+        transform: scale(1.05);
+    }
+}
+
+.status-connected {
+    background-color: #10B981 !important;
+}
+
+.status-disconnected {
+    background-color: #EF4444 !important;
+}
+
+.demo-mode {
+    background: linear-gradient(45deg, #f59e0b, #d97706) !important;
+}
+
+.real-mode {
+    background: linear-gradient(45deg, #10b981, #059669) !important;
 }
 
 /* Custom scrollbar */
@@ -33,4 +55,14 @@
 
 ::-webkit-scrollbar-thumb:hover {
     background: #059669;
+}
+
+/* Transaction links */
+.transaction-link {
+    color: #fbbf24;
+    text-decoration: underline;
+}
+
+.transaction-link:hover {
+    color: #f59e0b;
 }
