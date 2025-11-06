@@ -1,1 +1,27 @@
-
+{
+  "name": "bongo-empire-arcade",
+  "version": "1.0.0",
+  "description": "Web3 Casino with Phantom Wallet Integration",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend": "live-server frontend --port=3000 --wait=1000",
+    "backend": "node backend/server.js",
+    "start": "node backend/server.js"
+  },
+  "keywords": ["web3", "casino", "solana", "phantom", "gaming", "ogb"],
+  "author": "OGBongo",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "@solana/web3.js": "^1.87.6",
+    "@solana/spl-token": "^0.3.9"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "live-server": "^1.2.2"
+  }
+}
