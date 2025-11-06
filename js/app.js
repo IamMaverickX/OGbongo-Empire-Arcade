@@ -1,8 +1,4 @@
-// Real Solana Web3 Integration
-import { Connection, PublicKey, LAMPORTS_PER_SOL } from 'https://cdn.jsdelivr.net/npm/@solana/web3.js@1.87.6/+esm';
-import { getAssociatedTokenAddress, getAccount } from 'https://cdn.jsdelivr.net/npm/@solana/spl-token@0.3.9/+esm';
-
-// Configuration - USING YOUR ACTUAL TOKEN ADDRESS
+// Configuration
 const CONFIG = {
     RPC_URL: 'https://api.mainnet-beta.solana.com',
     OGB_TOKEN_MINT: '6tVWyzNZDJNwi4Lkb5JSknLYPa9TbjJpzTcGHndBpump',
@@ -26,40 +22,37 @@ let gameState = {
     }
 };
 
-// DOM Elements
-const connectWalletBtn = document.getElementById('connectWallet');
-const walletInfo = document.getElementById('walletInfo');
-const walletAddress = document.getElementById('walletAddress');
-const tokenBalance = document.getElementById('tokenBalance');
-const gameInterface = document.getElementById('gameInterface');
-const spinButton = document.getElementById('spinButton');
-const betAmount = document.getElementById('betAmount');
-const gameResult = document.getElementById('gameResult');
-const totalSpinsEl = document.getElementById('totalSpins');
-const winRateEl = document.getElementById('winRate');
-const biggestWinEl = document.getElementById('biggestWin');
-const statusIndicator = document.getElementById('statusIndicator');
-const statusText = document.getElementById('statusText');
-const gameModeDiv = document.getElementById('gameMode');
-const modeText = document.getElementById('modeText');
-const disconnectWalletBtn = document.getElementById('disconnectWallet');
-
 // Symbol constants
 const SYMBOLS = ['🍒', '🍋', '🍊', '⭐', '💎'];
 
+// DOM Elements
+let connectWalletBtn, walletInfo, walletAddress, tokenBalanceEl, gameInterface;
+let spinButton, betAmount, gameResult, totalSpinsEl, winRateEl, biggestWinEl;
+let statusIndicator, statusText, gameModeDiv, disconnectWalletBtn;
+
 // Initialize Game
-async function initGame() {
+function initGame() {
     console.log('🎰 Initializing Bongo Empire Arcade...');
-    console.log('💰 Using OGB Token:', CONFIG.OGB_TOKEN_MINT);
     
-    // Initialize Solana connection
-    await initializeSolanaConnection();
-    
+    // Get DOM elements
+    connectWalletBtn = document.getElementById('connectWallet');
+    walletInfo = document.getElementById('walletInfo');
+    walletAddress = document.getElementById('walletAddress');
+    tokenBalanceEl = document.getElementById('tokenBalance');
+    gameInterface = document.getElementById('gameInterface');
+    spinButton = document.getElementById('spinButton');
+    betAmount = document.getElementById('betAmount');
+    gameResult = document.getElementById('gameResult');
+    totalSpinsEl = document.getElementById('totalSpins');
+    winRateEl = document.getElementById('winRate');
+    biggestWinEl = document.getElementById('biggestWin');
+    statusIndicator = document.getElementById('statusIndicator');
+    statusText = document.getElementById('statusText');
+    gameModeDiv = document.getElementById('gameMode');
+    disconnectWalletBtn = document.getElementById('disconnectWallet');
+
     // Check server connection
-    await checkServerStatus();
-    
-    // Load casino info
-    await loadCasinoInfo();
+    checkServerStatus();
     
     // Setup wallet listeners
     setupWalletListeners();
@@ -67,6 +60,7 @@ async function initGame() {
     // Set up event listeners
     spinButton.addEventListener('click', spinSlots);
     betAmount.addEventListener('input', validateBetAmount);
+    
     if (disconnectWalletBtn) {
         disconnectWalletBtn.addEventListener('click', disconnectWallet);
     }
@@ -78,19 +72,13 @@ async function initGame() {
     updateGameModeDisplay();
     
     console.log('✅ Game initialized successfully - Starting in DEMO mode');
+    
+    // Show that buttons are working
+    gameResult.textContent = 'Ready to play! Click SPIN to start.';
+    gameResult.className = 'text-green-400';
 }
 
-// Initialize Solana Connection
-async function initializeSolanaConnection() {
-    try {
-        gameState.connection = new Connection(CONFIG.RPC_URL, 'confirmed');
-        console.log('✅ Connected to Solana', CONFIG.NETWORK);
-    } catch (error) {
-        console.error('❌ Failed to connect to Solana:', error);
-    }
-}
-
-// Real Phantom Wallet Integration
+// Phantom Wallet Integration
 function setupWalletListeners() {
     // Check if Phantom is installed
     if (window.solana && window.solana.isPhantom) {
@@ -99,7 +87,7 @@ function setupWalletListeners() {
         // Listen for account changes
         window.solana.on('accountChanged', (publicKey) => {
             if (publicKey) {
-                gameState.publicKey = new PublicKey(publicKey);
+                gameState.publicKey = new solanaWeb3.PublicKey(publicKey);
                 updateWalletUI();
                 loadTokenBalance();
             } else {
@@ -133,10 +121,7 @@ async function connectWallet() {
         gameState.isConnected = true;
         gameState.gameMode = 'real';
         
-        await updateWalletUI();
-        await loadTokenBalance();
-        await loadCasinoInfo();
-        
+        updateWalletUI();
         updateGameModeDisplay();
         
         console.log('✅ Wallet connected:', gameState.publicKey.toString());
@@ -198,7 +183,7 @@ function updateGameModeDisplay() {
 
 // Load Real Token Balance
 async function loadTokenBalance() {
-    if (!gameState.publicKey || !gameState.connection) {
+    if (!gameState.publicKey) {
         console.log('❌ Cannot load balance: Wallet not connected');
         return;
     }
@@ -206,15 +191,19 @@ async function loadTokenBalance() {
     try {
         console.log('🔄 Loading OGB token balance...');
         
+        if (!gameState.connection) {
+            gameState.connection = new solanaWeb3.Connection(CONFIG.RPC_URL, 'confirmed');
+        }
+        
         // Get associated token account
-        const tokenAccount = await getAssociatedTokenAddress(
-            new PublicKey(CONFIG.OGB_TOKEN_MINT),
+        const tokenAccount = await solanaSplToken.getAssociatedTokenAddress(
+            new solanaWeb3.PublicKey(CONFIG.OGB_TOKEN_MINT),
             gameState.publicKey
         );
 
         try {
             // Get token account info
-            const accountInfo = await getAccount(gameState.connection, tokenAccount);
+            const accountInfo = await solanaSplToken.getAccount(gameState.connection, tokenAccount);
             gameState.tokenBalance = Number(accountInfo.amount) / Math.pow(10, 6);
             
             console.log('✅ OGB Token balance loaded:', gameState.tokenBalance, 'OGB');
@@ -234,7 +223,7 @@ async function loadTokenBalance() {
 }
 
 // Update Wallet UI
-async function updateWalletUI() {
+function updateWalletUI() {
     if (!gameState.publicKey) return;
     
     const shortAddress = gameState.publicKey.toString().substring(0, 4) + '...' + 
@@ -245,6 +234,9 @@ async function updateWalletUI() {
     walletInfo.classList.remove('hidden');
     gameInterface.classList.remove('hidden');
     connectWalletBtn.classList.add('hidden');
+    
+    // Load token balance
+    loadTokenBalance();
 }
 
 function resetWalletUI() {
@@ -254,13 +246,17 @@ function resetWalletUI() {
     connectWalletBtn.textContent = 'Connect Phantom Wallet';
     
     // Reset display
-    tokenBalance.textContent = '0';
+    tokenBalanceEl.textContent = '1000';
+    gameState.balance = 1000;
     gameState.tokenBalance = 0;
 }
 
 // Main Spin Function
 async function spinSlots() {
-    if (gameState.spinning) return;
+    if (gameState.spinning) {
+        console.log('⚠️ Already spinning...');
+        return;
+    }
     
     const bet = parseInt(betAmount.value);
     
@@ -269,10 +265,18 @@ async function spinSlots() {
     gameState.spinning = true;
     spinButton.disabled = true;
     
-    if (gameState.gameMode === 'real') {
-        await realSpinSlots(bet);
-    } else {
-        await demoSpinSlots(bet);
+    console.log('🎯 Starting spin with bet:', bet);
+    
+    try {
+        if (gameState.gameMode === 'real') {
+            await realSpinSlots(bet);
+        } else {
+            await demoSpinSlots(bet);
+        }
+    } catch (error) {
+        console.error('❌ Spin error:', error);
+        gameResult.textContent = '❌ Spin failed: ' + error.message;
+        gameResult.className = 'text-red-400';
     }
     
     gameState.spinning = false;
@@ -344,9 +348,6 @@ async function realSpinSlots(bet) {
             // Update game statistics
             updateGameStats(result.winAmount);
             
-            // Refresh casino info
-            await loadCasinoInfo();
-            
             console.log('✅ REAL Spin completed successfully');
             
         } else {
@@ -366,58 +367,68 @@ async function demoSpinSlots(bet) {
     gameResult.className = 'text-blue-400';
 
     try {
-        // Send DEMO spin request to backend
-        const response = await fetch('/api/spin', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                betAmount: bet,
-                mode: 'demo'
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Demo spin failed');
-        }
-
-        if (result.success) {
-            // Animate the slot machine with the actual result
-            await animateReelsWithResult(result.symbols);
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Generate random result
+        const symbols = generateSlotResult();
+        const winAmount = calculateWinAmount(bet, symbols);
+        
+        // Update demo balance
+        gameState.balance = gameState.balance - bet + winAmount;
+        updateBalanceDisplay();
+        
+        // Animate the reels
+        await animateReelsWithResult(symbols);
+        
+        // Show result
+        if (winAmount > 0) {
+            gameResult.textContent = `🎉 Demo: You won ${winAmount} OGB!`;
+            gameResult.className = 'text-green-400 win-glow';
             
-            // Update demo balance
-            gameState.balance = gameState.balance - bet + result.winAmount;
-            updateBalanceDisplay();
-            
-            // Show demo result
-            gameResult.textContent = result.message;
-            gameResult.className = result.winAmount > 0 ? 'text-green-400 win-glow' : 'text-red-400';
-            
-            // Add win animation if won
-            if (result.winAmount > 0) {
-                document.querySelectorAll('.reel').forEach(reel => {
-                    reel.classList.add('win-glow');
-                    setTimeout(() => reel.classList.remove('win-glow'), 2000);
-                });
-            }
-            
-            // Update game statistics
-            updateGameStats(result.winAmount);
-            
-            console.log('✅ DEMO Spin completed successfully');
-            
+            // Add win animation
+            document.querySelectorAll('.reel').forEach(reel => {
+                reel.classList.add('win-glow');
+                setTimeout(() => reel.classList.remove('win-glow'), 2000);
+            });
         } else {
-            throw new Error(result.error || 'Demo spin failed');
+            gameResult.textContent = 'Demo: Better luck next time!';
+            gameResult.className = 'text-red-400';
         }
+        
+        // Update game statistics
+        updateGameStats(winAmount);
+        
+        console.log('✅ DEMO Spin completed successfully');
         
     } catch (error) {
         console.error('❌ DEMO spin failed:', error);
         gameResult.textContent = `❌ ${error.message}`;
         gameResult.className = 'text-red-400';
     }
+}
+
+// Generate random slot result
+function generateSlotResult() {
+    return [
+        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)],
+        SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
+    ];
+}
+
+// Calculate win amount
+function calculateWinAmount(betAmount, symbols) {
+    if (symbols[0] === symbols[1] && symbols[1] === symbols[2]) {
+        const multipliers = { '💎': 50, '⭐': 20, '🍒': 10, '🍋': 5, '🍊': 3 };
+        return betAmount * (multipliers[symbols[0]] || 3);
+    }
+    
+    if (symbols[0] === symbols[1] || symbols[1] === symbols[2] || symbols[0] === symbols[2]) {
+        return betAmount * 2;
+    }
+    
+    return 0;
 }
 
 // Animate Reels with Result
@@ -452,7 +463,7 @@ async function animateReelsWithResult(finalSymbols) {
 
 // Validation Functions
 function validateBet(bet) {
-    if (bet < 10) {
+    if (isNaN(bet) || bet < 10) {
         gameResult.textContent = 'Minimum bet is 10 OGB!';
         gameResult.className = 'text-red-400';
         return false;
@@ -483,7 +494,7 @@ function validateBet(bet) {
 
 function validateBetAmount() {
     const bet = parseInt(betAmount.value);
-    if (bet < 10) betAmount.value = 10;
+    if (isNaN(bet) || bet < 10) betAmount.value = 10;
     if (bet > 1000) betAmount.value = 1000;
 }
 
@@ -527,51 +538,9 @@ function saveGameStats() {
 
 function updateBalanceDisplay() {
     if (gameState.gameMode === 'real') {
-        tokenBalance.textContent = gameState.tokenBalance.toFixed(2);
+        tokenBalanceEl.textContent = gameState.tokenBalance.toFixed(2);
     } else {
-        tokenBalance.textContent = gameState.balance.toFixed(2);
-    }
-}
-
-// Casino Info Display
-async function loadCasinoInfo() {
-    try {
-        const response = await fetch('/api/casino-info');
-        if (response.ok) {
-            const casinoInfo = await response.json();
-            displayCasinoInfo(casinoInfo);
-        }
-    } catch (error) {
-        console.log('⚠️ Could not load casino info');
-    }
-}
-
-function displayCasinoInfo(casinoInfo) {
-    const statusColor = casinoInfo.casinoSOL > 0.1 ? 'text-green-400' : 'text-yellow-400';
-    const statusText = casinoInfo.casinoSOL > 0.1 ? '🟢 Ready' : '🟡 Low SOL';
-    
-    const casinoHtml = `
-        <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-4 mt-6 text-center">
-            <h4 class="font-bold mb-2">🏦 Casino Vault</h4>
-            <div class="text-sm space-y-2">
-                <div>OGB Balance: <span class="font-bold">${casinoInfo.casinoBalance} OGB</span></div>
-                <div>SOL for Fees: <span class="font-bold ${statusColor}">${casinoInfo.casinoSOL} SOL</span></div>
-                <div class="text-xs">Status: ${statusText}</div>
-                <div class="text-xs font-mono break-all bg-black bg-opacity-30 p-2 rounded mt-2">
-                    ${casinoInfo.casinoWallet}
-                </div>
-            </div>
-        </div>
-    `;
-    
-    // Add to page if not already there
-    if (!document.getElementById('casinoInfo')) {
-        const casinoDiv = document.createElement('div');
-        casinoDiv.id = 'casinoInfo';
-        casinoDiv.innerHTML = casinoHtml;
-        document.querySelector('.container').appendChild(casinoDiv);
-    } else {
-        document.getElementById('casinoInfo').innerHTML = casinoHtml;
+        tokenBalanceEl.textContent = gameState.balance.toFixed(2);
     }
 }
 
