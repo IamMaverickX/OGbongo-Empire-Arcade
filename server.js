@@ -73,11 +73,37 @@ app.get('/api/casino-info', async (req, res) => {
 
 app.post('/api/spin', async (req, res) => {
     try {
-        const { playerId, betAmount } = req.body;
+        const { playerId, betAmount, mode = 'demo' } = req.body;
         
-        if (!playerId || !betAmount) {
+        if (!betAmount) {
             return res.status(400).json({ 
-                error: 'Player ID and bet amount required' 
+                error: 'Bet amount required' 
+            });
+        }
+
+        // Demo mode - no real transactions
+        if (mode === 'demo') {
+            console.log(`🎮 DEMO SPIN: bet: ${betAmount} OGB`);
+            
+            const gameResult = generateGameResult(betAmount);
+            
+            res.json({
+                success: true,
+                symbols: gameResult.symbols,
+                betAmount: betAmount,
+                winAmount: gameResult.winAmount,
+                mode: 'DEMO',
+                message: gameResult.winAmount > 0 ? 
+                    `Demo: You won ${gameResult.winAmount} OGB! 🎉` : 
+                    'Demo: Better luck next time!'
+            });
+            return;
+        }
+
+        // Real mode - blockchain transactions
+        if (!playerId) {
+            return res.status(400).json({ 
+                error: 'Player ID required for real mode' 
             });
         }
 
@@ -122,7 +148,6 @@ app.post('/api/spin', async (req, res) => {
             
             if (!winResult.success) {
                 console.error('❌ Win payment failed:', winResult.error);
-                // Continue anyway, but log the error
             }
         }
 
@@ -153,11 +178,11 @@ app.post('/api/spin', async (req, res) => {
             message: gameResult.winAmount > 0 ? 
                 `🎉 You won ${gameResult.winAmount} OGB! (Real transaction)` : 
                 'Better luck next time! (Real transaction)',
-            mode: 'LIVE - Real blockchain transactions'
+            mode: 'LIVE'
         });
         
     } catch (error) {
-        console.error('❌ REAL Spin processing failed:', error);
+        console.error('❌ Spin processing failed:', error);
         res.status(500).json({ 
             error: error.message,
             tokenAddress: OGB_TOKEN_MINT.toString()
@@ -165,29 +190,7 @@ app.post('/api/spin', async (req, res) => {
     }
 });
 
-// Add transaction history endpoint
-app.get('/api/transaction/:signature', async (req, res) => {
-    try {
-        const signature = req.params.signature;
-        const transaction = await connection.getTransaction(signature);
-        
-        if (!transaction) {
-            return res.status(404).json({ error: 'Transaction not found' });
-        }
-
-        res.json({
-            signature: signature,
-            status: transaction.meta?.err ? 'failed' : 'success',
-            slot: transaction.slot,
-            timestamp: transaction.blockTime ? new Date(transaction.blockTime * 1000).toISOString() : null,
-            explorerUrl: `https://solscan.io/tx/${signature}?cluster=mainnet-beta`
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// Helper functions (keep the same)
+// Helper functions
 function generateGameResult(betAmount) {
     const symbols = generateSlotResult();
     const winAmount = calculateWinAmount(betAmount, symbols);
@@ -249,7 +252,7 @@ app.listen(PORT, async () => {
     console.log(`🎯 OGB Token: ${OGB_TOKEN_MINT.toString()}`);
     console.log(`🛒 Buy OGB: https://pump.fun/coin/6tVWyzNZDJNwi4Lkb5JSknLYPa9TbjJpzTcGHndBpump`);
     console.log(`🌐 Network: Solana Mainnet`);
-    console.log(`🚀 MODE: LIVE - Real blockchain transactions`);
+    console.log(`🚀 MODE: LIVE - Real blockchain transactions available`);
     
     // Display casino balances
     try {
