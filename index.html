@@ -1,110 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bongo's Empire Arcade - Web3 Casino</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/style.css">
-</head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <!-- Header -->
-        <header class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-green-400 mb-2">Bongo's Empire Arcade</h1>
-            <p class="text-gray-400">Web3 Casino powered by Solana & Phantom</p>
-        </header>
-
-        <!-- Wallet Connection -->
-        <div id="walletSection" class="text-center mb-8">
-            <button id="connectWallet" class="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg font-bold text-lg transition-colors">
-                Connect Phantom Wallet
-            </button>
-            <div id="walletInfo" class="hidden mt-4 p-4 bg-gray-800 rounded-lg">
-                <p>Connected: <span id="walletAddress" class="text-green-400"></span></p>
-                <p>Balance: <span id="tokenBalance" class="text-yellow-400">0</span> OGB</p>
+<!-- Real Token Information Section -->
+<div class="max-w-2xl mx-auto mt-8">
+    <div class="bg-gradient-to-r from-green-600 to-blue-600 rounded-xl p-6 text-center">
+        <h3 class="text-2xl font-bold mb-4">🎯 $OGB Token - Live on Mainnet!</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+            <div class="bg-black bg-opacity-30 p-4 rounded-lg">
+                <div class="font-bold">💰 How to Play</div>
+                <p class="text-gray-300">1. Buy OGB on Pump.fun<br>2. Connect your wallet<br>3. Start spinning!</p>
+            </div>
+            <div class="bg-black bg-opacity-30 p-4 rounded-lg">
+                <div class="font-bold">🔗 Token Address</div>
+                <p class="text-gray-300 font-mono text-xs break-all">6tVWyzNZDJNwi4Lkb5JSknLYPa9TbjJpzTcGHndBpump</p>
             </div>
         </div>
-
-        <!-- Game Interface -->
-        <div id="gameInterface" class="hidden max-w-2xl mx-auto">
-            <!-- Slot Machine -->
-            <div class="bg-gray-800 rounded-xl p-6 mb-6">
-                <h2 class="text-2xl font-bold text-center mb-6">Jungle Jackpot Slots</h2>
-                
-                <div class="slot-machine flex justify-center gap-4 mb-6">
-                    <div class="reel bg-white w-20 h-20 rounded-lg flex items-center justify-center text-2xl font-bold">
-                        <span id="reel1">🍒</span>
-                    </div>
-                    <div class="reel bg-white w-20 h-20 rounded-lg flex items-center justify-center text-2xl font-bold">
-                        <span id="reel2">🍋</span>
-                    </div>
-                    <div class="reel bg-white w-20 h-20 rounded-lg flex items-center justify-center text-2xl font-bold">
-                        <span id="reel3">⭐</span>
-                    </div>
-                </div>
-
-                <div class="text-center">
-                    <div class="mb-4">
-                        <label class="block mb-2">Bet Amount (OGB):</label>
-                        <input type="number" id="betAmount" value="10" min="10" max="1000" 
-                               class="bg-gray-700 text-white px-4 py-2 rounded text-center w-32">
-                    </div>
-                    
-                    <button id="spinButton" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-8 py-3 rounded-lg font-bold text-lg transition-colors">
-                        SPIN TO WIN
-                    </button>
-                </div>
-
-                <div id="gameResult" class="mt-4 text-center text-lg font-bold min-h-8"></div>
-            </div>
-
-            <!-- Game Stats -->
-            <div class="grid grid-cols-3 gap-4 text-center mb-8">
-                <div class="bg-gray-800 p-4 rounded-lg">
-                    <div class="text-2xl font-bold text-green-400" id="totalSpins">0</div>
-                    <div class="text-gray-400 text-sm">Total Spins</div>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg">
-                    <div class="text-2xl font-bold text-blue-400" id="winRate">0%</div>
-                    <div class="text-gray-400 text-sm">Win Rate</div>
-                </div>
-                <div class="bg-gray-800 p-4 rounded-lg">
-                    <div class="text-2xl font-bold text-yellow-400" id="biggestWin">0</div>
-                    <div class="text-gray-400 text-sm">Biggest Win</div>
-                </div>
-            </div>
-
-            <!-- Paytable -->
-            <div class="bg-gray-800 rounded-xl p-6">
-                <h3 class="text-xl font-bold mb-4">Paytable</h3>
-                <div class="grid gap-2 text-sm">
-                    <div class="flex justify-between">
-                        <span>3 Diamonds (💎💎💎)</span>
-                        <span class="text-green-400">50x Bet</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>3 Stars (⭐⭐⭐)</span>
-                        <span class="text-green-400">20x Bet</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>3 Cherries (🍒🍒🍒)</span>
-                        <span class="text-green-400">10x Bet</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Any 2 Matching</span>
-                        <span class="text-green-400">2x Bet</span>
-                    </div>
-                </div>
-            </div>
+        <div class="mt-4">
+            <a href="https://pump.fun/coin/6tVWyzNZDJNwi4Lkb5JSknLYPa9TbjJpzTcGHndBpump" 
+               target="_blank"
+               class="bg-yellow-500 hover:bg-yellow-600 px-6 py-3 rounded-lg font-bold inline-block transition-colors">
+               🚀 Buy OGB on Pump.fun
+            </a>
         </div>
-
-        <!-- Footer -->
-        <footer class="text-center mt-12 text-gray-500 text-sm">
-            <p>Built with ❤️ on Solana | $OGB Token Casino</p>
-        </footer>
     </div>
-
-    <script src="js/app.js"></script>
-</body>
-</html>
+</div>
