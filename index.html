@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bongo's Empire Arcade - Play to Earn Casino</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@solana/web3.js@1.87.6/lib/index.iife.js"></script>
+    <script src="https://unpkg.com/@solana/spl-token@0.3.9/lib/index.iife.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-gray-900 text-white min-h-screen">
@@ -17,9 +19,9 @@
 
         <!-- Game Mode Indicator -->
         <div id="gameMode" class="text-center mb-6">
-            <div class="inline-flex items-center bg-yellow-600 px-4 py-2 rounded-lg">
+            <div class="inline-flex items-center demo-mode px-4 py-2 rounded-lg">
                 <span class="mr-2">🎮</span>
-                <span id="modeText">DEMO MODE - Connect wallet to play with real OGB</span>
+                <span>DEMO MODE - Connect wallet to play with real OGB</span>
             </div>
         </div>
 
@@ -30,7 +32,7 @@
             </button>
             <div id="walletInfo" class="hidden mt-4 p-4 bg-gray-800 rounded-lg">
                 <p>Connected: <span id="walletAddress" class="text-green-400"></span></p>
-                <p>Balance: <span id="tokenBalance" class="text-yellow-400">0</span> OGB</p>
+                <p>Balance: <span id="tokenBalance" class="text-yellow-400">1000</span> OGB</p>
                 <button id="disconnectWallet" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg font-bold text-sm ml-4 transition-colors">
                     Disconnect
                 </button>
